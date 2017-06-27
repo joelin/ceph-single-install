@@ -129,4 +129,6 @@ if [[ $CEPH_VERSION == "luminous" ]]; then
 ceph config-key put mgr/dashboard/server_addr $MON_IP
 #restart mgr
 systemctl restart ceph-mgr@$HOST
+
+echo "http://"$MON_IP:7000 dashboard url
 fi
