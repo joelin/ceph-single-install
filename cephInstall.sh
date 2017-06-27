@@ -8,7 +8,7 @@ mkdir -p ~/ceph-install/install-$(date +%Y%m%d%H%M%S) && cd $_
 OFF_LINE=false
 
 # version of CEPH and OS 
-## jewel kraken
+## jewel kraken  luminous
 CEPH_VERSION=jewel
 ## el7(centos) rhel7(redhat)
 OS_DISTRO=el7
@@ -98,6 +98,13 @@ osd_journal_size = 1024
 osd_pool_default_size = 2
 osd_crush_chooseleaf_type = 0
 EOF
+if [[ $CEPH_VERSION == "luminous" ]]; then
+#add mgr module
+cat <<EOF >> ceph.conf
+[mgr]
+mgr_modules = dashboard
+EOF
+fi
 
 # install node
 ceph-deploy  install $HOST
@@ -112,8 +119,14 @@ do
   ceph-deploy osd activate ${HOST}:${i}1
 done
 
-#
+#admin
 ceph-deploy admin $HOST
 
 
 sudo chmod +r /etc/ceph/ceph.client.admin.keyring
+if [[ $CEPH_VERSION == "luminous" ]]; then
+# set dashboard ip
+ceph config-key put mgr/dashboard/server_addr $MON_IP
+#restart mgr
+systemctl restart ceph-mgr@$HOST
+fi
